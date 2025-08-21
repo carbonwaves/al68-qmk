@@ -1,4 +1,4 @@
-name: Build AL68 Firmware
+name: Build QMK Firmware
 
 on:
   push:
@@ -12,7 +12,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Install QMK
+      - name: Install QMK dependencies
         run: |
           sudo apt update
           sudo apt install -y git python3-pip dfu-util gcc-avr binutils-avr gdb-avr avr-libc \
@@ -21,8 +21,7 @@ jobs:
           pip3 install qmk
 
       - name: Setup QMK
-        run: |
-          qmk setup -y
+        run: qmk setup -y
 
       - name: Copy keyboard into QMK tree
         run: |
