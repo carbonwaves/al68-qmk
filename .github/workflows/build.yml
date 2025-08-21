@@ -2,7 +2,6 @@ name: Build AL68 Firmware
 
 on:
   push:
-    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -10,18 +9,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-    - name: Set up QMK environment
-      uses: qmk/setup-qmk@v1
+      - name: Install QMK
+        run: |
+          sudo apt update
+          sudo apt install -y git python3-pip dfu-util gcc-avr binutils-avr gdb-avr avr-libc \
+            gcc-arm-none-eabi binutils-arm-none-eabi libnewlib-arm-none-eabi
+          python3 -m pip install --upgrade pip
+          pip3 install qmk
 
-    - name: Compile AL68 keymap
-      run: |
-        qmk compile -kb al68 -km default --clean
+      - name: Setup QMK
+        run: |
+          qmk setup -y
 
-    - name: Upload firmware artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: al68-firmware
-        path: ./*.hex
+      - name: Copy keyboard into QMK tree
+        run: |
+          mkdir -p ~/qmk_firmware/keyboards/al68
+          cp -r ./al68/* ~/qmk_firmware/keyboards/al68/
+
+      - name: Compile firmware
+        run: |
+          cd ~/qmk_firmware
+          qmk compile -kb al68 -km default
+
+      - name: Upload firmware artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: al68_firmware
+          path: ~/qmk_firmware/*.hex
